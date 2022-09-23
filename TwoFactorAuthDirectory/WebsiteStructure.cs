@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,47 +10,47 @@ namespace TwoFactorAuthDirectory
 {
     public class Website
     {
-        public String Name { get; set; }
+        public String Name { get; set; } = "";
 
         [JsonProperty(PropertyName = "domain")]
-        public String Domain { get; set; }
+        public String Domain { get; set; } = "";
 
         [JsonProperty(PropertyName = "url")]
-        public String Url { get; set; }
+        public String Url { get; set; } = "";
 
         [JsonProperty(PropertyName = "tfa")]
         [JsonConverter(typeof(TfaTypesConverter))]
-        public TfaTypes Tfa { get; set; }
+        public TfaTypes Tfa { get; set; } = new TfaTypes();
 
         [JsonProperty(PropertyName = "documentation")]
-        public String Documentation { get; set; }
+        public String Documentation { get; set; } = "";
 
         [JsonProperty(PropertyName = "recovery")]
-        public String Recovery { get; set; }
+        public String Recovery { get; set; } = "";
 
         [JsonProperty(PropertyName = "notes")]
-        public String Notes { get; set; }
+        public String Notes { get; set; } = "";
 
         [JsonProperty(PropertyName = "contact")]
-        public Contact Contact { get; set; }
+        public Contact Contact { get; set; } = new Contact();
 
         [JsonProperty(PropertyName = "regions")]
-        public List<String> Regions { get; set; }
+        public List<String> Regions { get; set; } = new List<String>();
 
         [JsonProperty(PropertyName = "additional-domains")]
-        public List<String> Additional_domains { get; set; }
+        public List<String> Additional_domains { get; set; } = new List<String>();
 
         [JsonProperty(PropertyName = "custom-software")]
-        public List<String> Custom_software { get; set; }
+        public List<String> Custom_software { get; set; } = new List<String>();
 
         [JsonProperty(PropertyName = "custom-hardware")]
-        public List<String> Custom_hardware { get; set; }
+        public List<String> Custom_hardware { get; set; } = new List<String>();
 
         [JsonProperty(PropertyName = "keywords")]
-        public List<String> Keywords { get; set; }
+        public List<String> Keywords { get; set; } = new List<String>();
 
         [JsonProperty(PropertyName = "img")]
-        public String Img { get; set; }
+        public String Img { get; set; } = "";
 
         public bool IsSupporting(TfaTypes tfa)
         {

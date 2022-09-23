@@ -12,6 +12,7 @@ namespace TwoFactorAuthDirectory
     {
         public static readonly JsonSerializerSettings Settings = new JsonSerializerSettings
         {
+            NullValueHandling = NullValueHandling.Ignore,
             MetadataPropertyHandling = MetadataPropertyHandling.Ignore,
             DateParseHandling = DateParseHandling.None,
             Converters =
@@ -42,7 +43,12 @@ namespace TwoFactorAuthDirectory
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
-            throw new NotImplementedException();
+            Website website = value as Website;
+            WebsiteMiddleware websiteMiddleware = new WebsiteMiddleware();
+            websiteMiddleware.Name = website.Name;
+            websiteMiddleware.Website = website;
+            serializer.Serialize(writer, websiteMiddleware);
+            //throw new NotImplementedException();
         }
 
         public static readonly WebsiteConverter Singleton = new WebsiteConverter();
@@ -80,7 +86,13 @@ namespace TwoFactorAuthDirectory
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
-            throw new NotImplementedException();
+            WebsiteMiddleware websiteMiddleware = value as WebsiteMiddleware;
+            JArray jo = new JArray();
+            jo.Add(websiteMiddleware.Name);
+            jo.Add(JObject.FromObject(websiteMiddleware.Website));
+            jo.WriteTo(writer);
+            
+            //throw new NotImplementedException();
         }
 
         public static readonly WebsiteMiddlewareConverter Singleton = new WebsiteMiddlewareConverter();
@@ -139,9 +151,46 @@ namespace TwoFactorAuthDirectory
             throw new Exception("Cannot unmarshal type TfaTypes");
         }
 
-        public override void WriteJson(JsonWriter writer, object untypedValue, JsonSerializer serializer)
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
-            throw new NotImplementedException();
+            if (value != null) {
+                TfaTypes tfaTypes = (TfaTypes)value;
+                JArray jArray = new JArray();
+                foreach(TfaTypes type in Enum.GetValues(typeof(TfaTypes)))
+                {
+                    if (tfaTypes.HasFlag(type))
+                    {
+                        switch (type)
+                        {
+                            case TfaTypes.Call:
+                                jArray.Add("call");
+                                break;
+                            case TfaTypes.CustomHardware:
+                                jArray.Add("custom-hardware");
+                                break;
+                            case TfaTypes.CustomSoftware:
+                                jArray.Add("custom-software");
+                                break;
+                            case TfaTypes.Email:
+                                jArray.Add("email");
+                                break;
+                            case TfaTypes.Sms:
+                                jArray.Add("sms");
+                                break;
+                            case TfaTypes.Totp:
+                                jArray.Add("totp");
+                                break;
+                            case TfaTypes.U2F:
+                                jArray.Add("u2f");
+                                break;
+                            default:
+                                jArray.Add("other");
+                                break;
+                        }
+                    }
+                }
+                jArray.WriteTo(writer);
+            }
         }
 
         public static readonly TfaTypesConverter Singleton = new TfaTypesConverter();

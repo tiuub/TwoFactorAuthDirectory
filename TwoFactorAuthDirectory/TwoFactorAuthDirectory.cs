@@ -1,135 +1,254 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace TwoFactorAuthDirectory
 {
     public class TwoFactorAuthClient
     {
-        private String twoFactorAuthApiUrl = "https://2fa.directory/api/v3/all.json";
-        public String TwoFactorAuthApiUrl
+        private String apiUrl = "https://2fa.directory/api/v3/all.json";
+        public String ApiUrl
         {
-            get { return twoFactorAuthApiUrl; }
-            set { this.twoFactorAuthApiUrl = value; }
+            get { return apiUrl; }
+            set { this.apiUrl = value; }
         }
 
-        private WebsiteTreeNode<String> websites = new WebsiteTreeNode<String>("");
-        public WebsiteTreeNode<String> Websites
+        private HttpHandler httpHandler = new HttpHandler();
+        public HttpHandler HttpHandler
         {
-            get { return this.websites; }
-            set { this.websites = value; }
+            get { return httpHandler; }
+            set { this.httpHandler = value; }
         }
 
-        public TwoFactorAuthClient()
+        /// <summary>
+        /// Fetches the whole list of websites from the API synchronously
+        /// </summary>
+        /// <exception cref="HttpCodeException"></exception>
+        public List<Website> Fetch()
         {
-            
+            return FetchAsync().Result;
         }
 
-        public async Task fetchAsync()
+        /// <summary>
+        /// Fetches the whole list of websites from the API asynchronously
+        /// </summary>
+        /// <exception cref="HttpCodeException"></exception>
+        public async Task<List<Website>> FetchAsync()
         {
-            await fetchAsync(new HttpHandler());
+            String response = await this.HttpHandler.FetchUrlAsync(this.ApiUrl);
+            return TwoFactorAuthDirectory.Deserialize(response);
+        }
+    }
+
+    public static class TwoFactorAuthDirectory 
+    {
+        /// <summary>
+        /// Deserializes the json
+        /// </summary>
+        /// <param name="json">Json String</param>
+        /// <returns>List of websites</returns>
+        public static List<Website> Deserialize(String json)
+        {
+            return JsonConvert.DeserializeObject<List<Website>>(json, CustomConverter.Settings);
         }
 
-        public async Task fetchAsync(HttpHandler handler)
+        /// <summary>
+        /// Serializes the list of websites and returns a json
+        /// </summary>
+        /// <param name="websites">List of websites</param>
+        /// <returns>Serialized json string of websites</returns>
+        public static String Serialize(List<Website> websites)
         {
-            this.Websites = new WebsiteTreeNode<String>(""); // Defining root tree node
+            return JsonConvert.SerializeObject(websites, CustomConverter.Settings);
+        }
 
-            String response = await handler.FetchUrlAsync(this.TwoFactorAuthApiUrl);
-            List<Website> websites = JsonConvert.DeserializeObject<List<Website>>(response, CustomConverter.Settings);
+        /// <summary>
+        /// Searches for websites by given predicate
+        /// </summary>
+        /// <param name="websites">List of all websites</param>
+        /// <param name="predicate">Func&lt;Website, bool&gt; of predicate</param>
+        /// <returns>Websites which matches the given predicate</returns>
+        public static List<Website> Find(List<Website> websites, Func<Website, bool> predicate)
+        {
+            return websites.Where(predicate).ToList();
+        }
 
-            foreach (Website website in websites)
+        /// <summary>
+        /// Searches for websites by given domain
+        /// </summary>
+        /// <param name="websites">List of all websites</param>
+        /// <param name="name">Name of the website</param>
+        /// <param name="ignoreCase">Whether to search case-sensitive or not</param>
+        /// <param name="regex">Whether to use regex or not</param>
+        /// <returns>Websites which contain the given domain</returns>
+        public static List<Website> FindByName(List<Website> websites, String name, bool ignoreCase = true, bool regex = true)
+        {
+            if (regex)
             {
-                List<String> urls = new List<String>();
-                urls.Add(website.Domain);
-                if (website.Additional_domains != null)
-                    urls.AddRange(website.Additional_domains);
-
-                foreach (String url in urls)
-                {
-                    String host = new Uri(url).Host;
-                    if (Uri.IsWellFormedUriString(url, UriKind.Absolute))
-                        host = new Uri(url).DnsSafeHost;
-                    String[] reversedDomainLevelArray = Utils.reversedDomainLevelArray(host);
-                    WebsiteTreeNode<String> currentSiteTreeNode = this.Websites;
-                    foreach (String domainLevel in reversedDomainLevelArray)
-                    {
-                        currentSiteTreeNode = currentSiteTreeNode.AddOrGetExistingChild(Utils.unescapeAsterisk(domainLevel));
-                    }
-                    currentSiteTreeNode.AddWebsite(website);
-                }
+                Regex rg = new Regex(name, ignoreCase ? RegexOptions.IgnoreCase : RegexOptions.None);
+                return Find(websites, website => rg.IsMatch(website.Name));
+            }
+            else
+            {
+                return Find(websites, website => website.Name.Contains(name, ignoreCase ? StringComparison.CurrentCultureIgnoreCase : StringComparison.CurrentCulture));
             }
         }
 
-        public List<Website> find(Func<Website, bool> predicate)
+        /// <summary>
+        /// Searches for websites by given domain
+        /// </summary>
+        /// <param name="websites">List of all websites</param>
+        /// <param name="domain">String of domain</param>
+        /// <returns>Websites which contain the given domain</returns>
+        public static List<Website> FindByDomain(List<Website> websites, String domain)
         {
-            return this.Websites.GetAllWebsites(predicate);
+            return Find(websites, website => string.Equals(website.Domain, domain, StringComparison.CurrentCultureIgnoreCase));
         }
 
-        public Website findFirstWebsiteByUrl(String url)
+        /// <summary>
+        /// Searches for websites by given url
+        /// </summary>
+        /// <param name="websites">List of all websites</param>
+        /// <param name="websites">List of all websites</param>
+        /// <param name="url">String of url</param>
+        /// <returns>Websites which contain the given url</returns>
+        public static List<Website> FindByUrl(List<Website> websites, String url)
         {
-            List<Website> websites = findAllWebsitesByUrl(url);
-            if (websites.Count > 0)
-            {
-                return websites.First();
-            }
-            return null;
+            Uri uri;
+            if (Uri.TryCreate(url, UriKind.Absolute, out uri) || Uri.TryCreate("http://" + url, UriKind.Absolute, out uri))
+                return FindByUrl(websites, uri);
+            throw new UriFormatException("Given Url does not fit the Uri format.");
         }
 
-        public List<Website> findAllWebsitesByUrl(String url)
+        /// <summary>
+        /// Searches for websites by given url
+        /// </summary>
+        /// <param name="websites">List of all websites</param>
+        /// <param name="uri">String of url</param>
+        /// <returns>Websites which contain the given url</returns>
+        public static List<Website> FindByUrl(List<Website> websites, Uri uri)
         {
-            return findAllWebsitesByUrl(new Uri(url));
+            return Find(websites, website => string.Equals(website.Domain, uri.Host, StringComparison.CurrentCultureIgnoreCase) ||
+                                        website.Url.Contains(uri.Host, StringComparison.CurrentCultureIgnoreCase) ||
+                                        website.Additional_domains.Contains(uri.Host, StringComparer.CurrentCultureIgnoreCase));
         }
 
-        public List<Website> findAllWebsitesByUrl(Uri uri)
+        /// <summary>
+        /// Searches for websites by given types of two factor authentication
+        /// </summary>
+        /// <param name="websites">List of all websites</param>
+        /// <param name="tfa">List&lt;String&gt; of types of two factor authentication</param>
+        /// <returns>Websites which contains all of the given types of two factor authentication</returns>
+        public static List<Website> FindByTfa(List<Website> websites, TfaTypes tfa)
         {
-            List<Website> websites = new List<Website>();
-            String[] reversedDomainLevelArray = Utils.reversedDomainLevelArray(uri.Host);
-            WebsiteTreeNode<String> currentSiteTreeNode = this.Websites;
-            int iteration = 0;
-            foreach (String domainLevel in reversedDomainLevelArray)
-            {
-                iteration++;
-
-                if (domainLevel.Equals("*"))
-                {
-                    websites.AddRange(currentSiteTreeNode.GetAllWebsites());
-                    break;
-                }
-
-                currentSiteTreeNode = currentSiteTreeNode.FindSiteTreeNodeByDomainLevel(node => node.DomainLevel == domainLevel || node.DomainLevel == "*");
-
-                if (currentSiteTreeNode == null)
-                {
-                    break;
-                }
-
-                if (iteration >= reversedDomainLevelArray.Count())
-                {
-                    websites.AddRange(currentSiteTreeNode.Websites);
-                }
-
-                if (currentSiteTreeNode.IsLeaf)
-                {
-                    break;
-                }
-            }
-            return websites;
+            return Find(websites, website => website.IsSupporting(tfa));
         }
 
-
-        public List<Website> findAllWebsitesByTfa(TfaTypes tfa)
+        /// <summary>
+        /// Searches for websites by given keywords
+        /// </summary>
+        /// <param name="websites">List of all websites</param>
+        /// <param name="keywords">List&lt;String&gt; of keywords</param>
+        /// <returns>Websites which contains all of the given keywords</returns>
+        public static List<Website> FindByKeywords(List<Website> websites, List<String> keywords)
         {
-            return this.Websites.GetAllWebsites(website => website.IsSupporting(tfa));
+            return Find(websites, website => keywords.All(keyword => website.Keywords.Contains(keyword)));
         }
 
-        public List<Website> findAllWebsitesByKeyword(string keyword)
+        /// <summary>
+        /// Searches for websites by given regions in ISO 3166-1 country codes
+        /// </summary>
+        /// <param name="websites">List of all websites</param>
+        /// <param name="regions">List&lt;String&gt; of ISO 3166-1 country codes</param>
+        /// <returns>Websites which contains all of the given country codes</returns>
+        public static List<Website> FindByRegions(List<Website> websites, List<String> regions)
         {
-            return this.Websites.GetAllWebsites(website => website.Keywords.Contains(keyword));
+            return Find(websites, website => regions.All(region => website.Regions.Contains(region)));
+        }
+    }
+
+    public static class ExtensionMethods
+    {
+        /// <summary>
+        /// Serializes the list of websites and returns a json
+        /// </summary>
+        /// <returns>Serialized json string of websites</returns>
+        public static String Serialize(this List<Website> websites)
+        {
+            return TwoFactorAuthDirectory.Serialize(websites);
+        }
+
+        /// <summary>
+        /// Searches for websites by given domain
+        /// </summary>
+        /// <param name="domain">String of domain</param>
+        /// <returns>Websites which contain the given domain</returns>
+        public static List<Website> FindByName(this List<Website> websites, String name, bool ignoreCase = true, bool regex = false)
+        {
+            return TwoFactorAuthDirectory.FindByName(websites, name, ignoreCase, regex);
+        }
+
+        /// <summary>
+        /// Searches for websites by given domain
+        /// </summary>
+        /// <param name="domain">String of domain</param>
+        /// <returns>Websites which contain the given domain</returns>
+        public static List<Website> FindByDomain(this List<Website> websites, String domain)
+        {
+            return TwoFactorAuthDirectory.FindByDomain(websites, domain);
+        }
+
+        /// <summary>
+        /// Searches for websites by given url
+        /// </summary>
+        /// <param name="url">String of url</param>
+        /// <returns>Websites which contain the given url</returns>
+        public static List<Website> FindByUrl(this List<Website> websites, String url)
+        {
+            return TwoFactorAuthDirectory.FindByUrl(websites, url);
+        }
+
+        /// <summary>
+        /// Searches for websites by given url
+        /// </summary>
+        /// <param name="uri">String of url</param>
+        /// <returns>Websites which contain the given url</returns>
+        public static List<Website> FindByUrl(this List<Website> websites, Uri uri)
+        {
+            return TwoFactorAuthDirectory.FindByUrl(websites, uri);
+        }
+
+        /// <summary>
+        /// Searches for websites by given types of two factor authentication
+        /// </summary>
+        /// <param name="tfa">List&lt;String&gt; of types of two factor authentication</param>
+        /// <returns>Websites which contains all of the given types of two factor authentication</returns>
+        public static List<Website> FindByTfa(this List<Website> websites, TfaTypes tfa)
+        {
+            return TwoFactorAuthDirectory.FindByTfa(websites, tfa);
+        }
+
+        /// <summary>
+        /// Searches for websites by given keywords
+        /// </summary>
+        /// <param name="keywords">List&lt;String&gt; of keywords</param>
+        /// <returns>Websites which contains all of the given keywords</returns>
+        public static List<Website> FindByKeywords(this List<Website> websites, List<String> keywords)
+        {
+            return TwoFactorAuthDirectory.FindByKeywords(websites, keywords);
+        }
+
+        /// <summary>
+        /// Searches for websites by given regions in ISO 3166-1 country codes
+        /// </summary>
+        /// <param name="regions">List&lt;String&gt; of ISO 3166-1 country codes</param>
+        /// <returns>Websites which contains all of the given country codes</returns>
+        public static List<Website> FindByRegions(this List<Website> websites, List<String> regions)
+        {
+            return TwoFactorAuthDirectory.FindByRegions(websites, regions);
         }
     }
 }
