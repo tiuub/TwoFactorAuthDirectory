@@ -1,15 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
-    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <Title>TwoFactorAuthDirectory</Title>
-    <PackageId>TwoFactorAuthDirectory</PackageId>
+    <TargetFrameworks>netstandard2.1;netstandard2.0;net45;net6.0</TargetFrameworks>
+    <Nullable>disable</Nullable>
+    <Title>$(AssemblyName)</Title>
     <Authors>tiuub</Authors>
-    <PackageProjectUrl>https://github.com/tiuub/TwoFactorAuthDirectory</PackageProjectUrl>
     <RepositoryUrl>https://github.com/tiuub/TwoFactorAuthDirectory</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageTags>2fa;twofactor;authentication;totp;hotp;u2f;fido;password;security</PackageTags>
+    <PackageProjectUrl>https://github.com/tiuub/TwoFactorAuthDirectory</PackageProjectUrl>
     <Description>With this library you can easily determine which website supports which type of 2fa.
 The library uses the 2fa.directory API.
 
@@ -24,7 +22,18 @@ With this library you can get a list of websites filtered
 
 
 More details on GitHub.</Description>
+    <PackageTags>2fa;twofactor;authentication;totp;hotp;u2f;fido;password;security</PackageTags>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <Version>1.0.2</Version>
   </PropertyGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'=='net45'">
+    <Reference Include="System.Net.Http" />
+  </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework)'=='netstandard1.1'">
+    <Reference Include="System.Runtime.Serialization.Formatters" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />

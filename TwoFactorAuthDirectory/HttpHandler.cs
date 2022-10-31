@@ -14,7 +14,7 @@ namespace TwoFactorAuthDirectory
 
     public class HttpHandler
     {
-        private String userAgent = "TwoFactorAuthDirectory/0.1.0.0";
+        private String userAgent = "TwoFactorAuthDirectory/0.0.0.0";
         public String UserAgent
         {
             get { return this.userAgent; }

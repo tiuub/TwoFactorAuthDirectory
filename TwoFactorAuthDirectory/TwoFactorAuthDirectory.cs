@@ -82,18 +82,16 @@ namespace TwoFactorAuthDirectory
         /// <param name="websites">List of all websites</param>
         /// <param name="name">Name of the website</param>
         /// <param name="ignoreCase">Whether to search case-sensitive or not</param>
-        /// <param name="regex">Whether to use regex or not</param>
         /// <returns>Websites which contain the given domain</returns>
-        public static List<Website> FindByName(List<Website> websites, String name, bool ignoreCase = true, bool regex = true)
+        public static List<Website> FindByName(List<Website> websites, String name, bool ignoreCase = true)
         {
-            if (regex)
+            if (ignoreCase)
             {
-                Regex rg = new Regex(name, ignoreCase ? RegexOptions.IgnoreCase : RegexOptions.None);
-                return Find(websites, website => rg.IsMatch(website.Name));
+                return Find(websites, website => website.Name.ToLower().Contains(name.ToLower()));
             }
             else
             {
-                return Find(websites, website => website.Name.Contains(name, ignoreCase ? StringComparison.CurrentCultureIgnoreCase : StringComparison.CurrentCulture));
+                return Find(websites, website => website.Name.Contains(name));
             }
         }
 
@@ -132,7 +130,7 @@ namespace TwoFactorAuthDirectory
         public static List<Website> FindByUrl(List<Website> websites, Uri uri)
         {
             return Find(websites, website => string.Equals(website.Domain, uri.Host, StringComparison.CurrentCultureIgnoreCase) ||
-                                        website.Url.Contains(uri.Host, StringComparison.CurrentCultureIgnoreCase) ||
+                                        website.Url.ToLower().Contains(uri.Host.ToLower()) ||
                                         website.Additional_domains.Contains(uri.Host, StringComparer.CurrentCultureIgnoreCase));
         }
 
@@ -186,9 +184,9 @@ namespace TwoFactorAuthDirectory
         /// </summary>
         /// <param name="domain">String of domain</param>
         /// <returns>Websites which contain the given domain</returns>
-        public static List<Website> FindByName(this List<Website> websites, String name, bool ignoreCase = true, bool regex = false)
+        public static List<Website> FindByName(this List<Website> websites, String name, bool ignoreCase = true)
         {
-            return TwoFactorAuthDirectory.FindByName(websites, name, ignoreCase, regex);
+            return TwoFactorAuthDirectory.FindByName(websites, name, ignoreCase);
         }
 
         /// <summary>

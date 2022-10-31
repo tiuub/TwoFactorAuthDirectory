@@ -15,7 +15,6 @@ namespace TwoFactorAuthDirectoryTests
             client.ApiUrl = "https://twofactorauth.tiuub.de/frozen/2022-07-06/api/v3/all.json";
             List<Website> websites = client.Fetch();
 
-
             List<Website> tmpWebsites = websites.FindAll(website => website.Domain == "mail.google.com");
             Assert.AreEqual(1, tmpWebsites.Count);
             Assert.AreEqual("Gmail", tmpWebsites[0].Name);

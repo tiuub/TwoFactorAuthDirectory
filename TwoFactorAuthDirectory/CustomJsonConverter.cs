@@ -48,7 +48,6 @@ namespace TwoFactorAuthDirectory
             websiteMiddleware.Name = website.Name;
             websiteMiddleware.Website = website;
             serializer.Serialize(writer, websiteMiddleware);
-            //throw new NotImplementedException();
         }
 
         public static readonly WebsiteConverter Singleton = new WebsiteConverter();
@@ -91,8 +90,6 @@ namespace TwoFactorAuthDirectory
             jo.Add(websiteMiddleware.Name);
             jo.Add(JObject.FromObject(websiteMiddleware.Website));
             jo.WriteTo(writer);
-            
-            //throw new NotImplementedException();
         }
 
         public static readonly WebsiteMiddlewareConverter Singleton = new WebsiteMiddlewareConverter();
