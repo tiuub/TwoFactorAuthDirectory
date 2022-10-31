@@ -1,8 +1,8 @@
 # TwoFactorAuthDirectory (related to 2fa.directory)
-[![NuGet Releases](https://img.shields.io/nuget/v/tiuub.Util.TwoFactorAuthDirectory)](https://www.nuget.org/packages/tiuub.Util.TwoFactorAuthDirectory/)
-[![NuGet Releases](https://img.shields.io/nuget/dt/tiuub.Util.TwoFactorAuthDirectory)](https://www.nuget.org/packages/tiuub.Util.TwoFactorAuthDirectory/)
+[![NuGet Releases](https://img.shields.io/nuget/v/TwoFactorAuthDirectory)](https://www.nuget.org/packages/TwoFactorAuthDirectory/)
+[![NuGet Releases](https://img.shields.io/nuget/dt/TwoFactorAuthDirectory)](https://www.nuget.org/packages/TwoFactorAuthDirectory/)
 [![Issues](https://img.shields.io/github/issues/tiuub/TwoFactorAuthDirectory)](https://github.com/tiuub/TwoFactorAuthDirectory/issues)
-[![GitHub](https://img.shields.io/github/license/tiuub/TwoFactorAuthDirectory)](https://github.com/tiuub/TwoFactorAuthDirectory/blob/master/LICENSE)
+[![GitHub](https://img.shields.io/github/license/tiuub/TwoFactorAuthDirectory)](https://github.com/tiuub/TwoFactorAuthDirectory/blob/master/LICENSE.md)
 [![Donate](https://img.shields.io/badge/donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=5F5QB7744AD5G&source=url)
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/tiuub)](https://github.com/sponsors/tiuub)
 
@@ -73,7 +73,7 @@ List<Website> websitesByRegions = websites.FindByRegions(new List<String>() { "u
 
 ## License
 
-[![GitHub](https://img.shields.io/github/license/tiuub/TwoFactorAuthDirectory)](https://github.com/tiuub/TwoFactorAuthDirectory/blob/master/LICENSE)
+[![GitHub](https://img.shields.io/github/license/tiuub/TwoFactorAuthDirectory)](https://github.com/tiuub/TwoFactorAuthDirectory/blob/master/LICENSE.md)
 
 
 
