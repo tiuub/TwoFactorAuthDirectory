@@ -49,6 +49,12 @@ List<Website> websites = client.Fetch();
 TwoFactorAuthClient client = new TwoFactorAuthClient();
 List<Website> websites = client.Fetch();
 
+// Find all websites which are supporting anything
+List<Website> websitesByName = websites.FindAll(website => website.IsSupportingAny());
+
+// Find all websites which are supporting TfyTypes.Totp or TfaTypes.Sms
+List<Website> websitesByName = websites.FindAll(website => website.IsSupporting(TfaTypes.Totp | TfaTypes.Sms));
+
 // Find all websites which include "Google" in their name
 List<Website> websitesByName = websites.FindByName("Google", ignoreCase: true);
 
