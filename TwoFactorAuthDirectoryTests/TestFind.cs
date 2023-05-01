@@ -27,6 +27,10 @@ namespace TwoFactorAuthDirectoryTests
             tmpWebsites = websites.FindAll(website => website.IsSupporting(TfaTypes.Totp | TfaTypes.Sms));
             Assert.AreEqual(343, tmpWebsites.Count);
             Assert.AreEqual("(ISC)2", tmpWebsites[0].Name);
+
+            tmpWebsites = websites.FindAll(website => !website.IsSupportingAny());
+            Assert.AreEqual(605, tmpWebsites.Count);
+            Assert.AreEqual("000webhost", tmpWebsites[0].Name);
         }
 
         [TestMethod]

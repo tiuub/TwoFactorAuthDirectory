@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -52,6 +53,13 @@ namespace TwoFactorAuthDirectory
         [JsonProperty(PropertyName = "img")]
         public String Img { get; set; } = "";
 
+        public bool IsSupportingAny()
+        {
+            if ((this.Tfa & TfaTypes.All) != 0)
+                return true;
+            return false;
+        }
+
         public bool IsSupporting(TfaTypes tfa)
         {
             return this.Tfa.HasFlag(tfa);
@@ -94,5 +102,7 @@ namespace TwoFactorAuthDirectory
         CustomHardware = 1 << 5,
         CustomSoftware = 1 << 6,
         Other = 1 << 7,
+        
+        All = Totp | Email | Sms | Call | U2F | CustomHardware | CustomSoftware | Other,
     }
 }
