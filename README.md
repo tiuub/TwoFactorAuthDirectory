@@ -88,6 +88,8 @@ List<Website> websitesByRegions = websites.FindByRegions(new List<String>() { "u
 Dependencie | Source | NuGet | Author | License
 --- | --- | --- | --- | ---
 **Newtonsoft.Json** | [source](https://github.com/JamesNK/Newtonsoft.Json) | [NuGet](https://www.nuget.org/packages/Newtonsoft.Json) | [newtonsoft](https://www.nuget.org/profiles/newtonsoft) | [MIT](https://licenses.nuget.org/MIT)
+**Microsoft.Net.Http** | [Project website](https://devblogs.microsoft.com/bclteam/p/httpclient.aspx) | [NuGet](https://www.nuget.org/packages/Microsoft.Net.Http) | [Microsoft](https://www.nuget.org/profiles/microsoft), [dotnetframework](https://www.nuget.org/profiles/dotnetframework) | [License](https://dotnet.microsoft.com/en-us/dotnet_library_license.htm)
+**Microsoft.Bcl.Async** | [Project website](https://devblogs.microsoft.com/bclteam/p/asynctargetingpackkb.aspx) | [NuGet](https://www.nuget.org/packages/Microsoft.Bcl.Async/) | [Microsoft](https://www.nuget.org/profiles/microsoft), [dotnetframework](https://www.nuget.org/profiles/dotnetframework) | [License](https://dotnet.microsoft.com/en-us/dotnet_library_license.htm)
 
 
 

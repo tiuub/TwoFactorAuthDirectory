@@ -55,7 +55,7 @@ namespace TwoFactorAuthDirectory
             httpClient.DefaultRequestHeaders.Add("ContentType", this.ContentType);
             httpClient.Timeout = TimeSpan.FromSeconds(this.Timeout);
 
-            var response = await httpClient.GetAsync(url);
+            HttpResponseMessage response = await httpClient.GetAsync(url);
             response.EnsureSuccessStatusCode();
             if (response.StatusCode == HttpStatusCode.OK)
             {
